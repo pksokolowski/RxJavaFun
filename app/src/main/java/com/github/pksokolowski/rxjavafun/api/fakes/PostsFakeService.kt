@@ -1,11 +1,10 @@
 package com.github.pksokolowski.rxjavafun.api.fakes
 
-import com.github.pksokolowski.rxjavafun.api.SomeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
 import com.github.pksokolowski.rxjavafun.api.models.User
 import javax.inject.Inject
 
-class PostsFakeService @Inject constructor() : SomeService {
+class PostsFakeService @Inject constructor() {
 
     private val users = listOf(
         User(1, "Czeslaw", "Niewomen"),
@@ -19,10 +18,10 @@ class PostsFakeService @Inject constructor() : SomeService {
     )
 
 
-    override fun getUsers() = fakeResource { users }
+    fun getUsers() = fakeResource { users }
 
-    override fun getPosts() = fakeResource { posts }
+    fun getPosts() = fakeResource { posts }
 
-    override fun getPostsByUserId(userId: Long) = fakeResource { posts.filter { it.userId == userId } }
+    fun getPostsByUserId(userId: Long) = fakeResource { posts.filter { it.userId == userId } }
 
 }

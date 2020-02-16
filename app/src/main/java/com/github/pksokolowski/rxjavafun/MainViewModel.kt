@@ -3,7 +3,6 @@ package com.github.pksokolowski.rxjavafun
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.github.pksokolowski.rxjavafun.api.SomeService
 import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
 import io.reactivex.android.schedulers.AndroidSchedulers

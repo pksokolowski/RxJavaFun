@@ -5,7 +5,7 @@ import dagger.BindsInstance
 import dagger.Component
 
 @PerApp
-@Component(modules = [AppModule::class, NetworkModule::class, ActivitiesModule::class, FragmentsModule::class])
+@Component(modules = [AppModule::class, ActivitiesModule::class, FragmentsModule::class])
 interface AppComponent {
     @Component.Builder
     interface Builder {
