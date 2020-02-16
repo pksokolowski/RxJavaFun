@@ -18,16 +18,17 @@
 
     <TextView
         android:id="@+id/output"
-        android:padding="8dp"
         android:layout_width="0dp"
-        android:scrollbars="vertical"
         android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
         android:background="#000000"
-        android:textColor="#ffffff"
+        android:padding="8dp"
+        android:scrollbars="vertical"
         android:text=""
-        tools:text="Some output"
+        android:textColor="#ffffff"
         app:layout_constraintBottom_toTopOf="@+id/startButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Some output" />
 </androidx.constraintlayout.widget.ConstraintLayout>
