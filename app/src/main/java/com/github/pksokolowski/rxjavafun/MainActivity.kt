@@ -1,21 +1,21 @@
 package com.github.pksokolowski.rxjavafun
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.pksokolowski.rxjavafun.di.ViewModelFactory
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 
+
 class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
-
-    var postsAdapter: PostsAdapter = PostsAdapter()
 
     private lateinit var viewModel: MainViewModel
 
@@ -23,11 +23,9 @@ class MainActivity : AppCompatActivity() {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        output.movementMethod = ScrollingMovementMethod()
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
-
-        recyclerView.adapter = postsAdapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
 
         setupUiInteraction()
         setupObservers()
@@ -35,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         viewModel.getPosts().observe(this, Observer {
-            postsAdapter.setItems(it)
+            writeln(it.map { "title = ${it.title}\nbody=${it.body}" })
         })
     }
 
@@ -45,4 +43,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun writeln(content: String) {
+        if(content.isEmpty()) return
+        output.append("\n$content")
+        scroll()
+    }
+
+    private fun writeln(lines: List<String>){
+        val builder = StringBuilder()
+        lines.forEach { builder.appendln(it) }
+        writeln(builder.toString())
+    }
+
+    private fun scroll() {
+        val scrollAmount = output.layout.getLineTop(output.lineCount) - output.height
+        // if there is no need to scroll, scrollAmount will be <=0
+        if (scrollAmount > 0)
+            output.scrollTo(0, scrollAmount)
+        else
+            output.scrollTo(0, 0)
+    }
+
+    private fun appendOutputAndScrollABit(content: String) {
+        var lcount = 0
+        val index = content.indexOfFirst { c -> c == '\n' && lcount++ > 5 }
+        val firstPart = if (index > -1) content.substring(0, index) else content
+        output.append(firstPart)
+        scroll()
+        if (index > -1) {
+            val secondPart = content.substring(index)
+            output.append(secondPart)
+        }
+    }
 }
