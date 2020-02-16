@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUiInteraction() {
         startButton.setOnClickListener {
-            viewModel.fetchPosts()
+            viewModel.fetchPostsOfAllUsers()
         }
     }
 

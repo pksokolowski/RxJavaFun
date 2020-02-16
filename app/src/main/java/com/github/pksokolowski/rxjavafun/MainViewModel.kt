@@ -8,6 +8,7 @@ import com.github.pksokolowski.rxjavafun.api.models.Post
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.flatMapIterable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
@@ -37,6 +38,22 @@ class MainViewModel @Inject constructor(
             )
             .addTo(disposables)
 
+
+    fun fetchPostsOfAllUsers() {
+        val results = mutableListOf<Post>()
+        service.getUsers()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .flatMapIterable { it }
+            .flatMap { user ->
+                service.getPostsByUserId(user.id)
+            }
+            .subscribeBy(
+                onNext = { results.addAll(it) },
+                onComplete = { posts.value = results }
+            )
+            .addTo(disposables)
+    }
 
     override fun onCleared() {
         super.onCleared()
