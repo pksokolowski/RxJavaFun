@@ -1,16 +1,28 @@
 package com.github.pksokolowski.rxjavafun.api.fakes
 
-import com.github.pksokolowski.rxjavafun.api.JsonPlaceholderService
+import com.github.pksokolowski.rxjavafun.api.SomeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
+import com.github.pksokolowski.rxjavafun.api.models.User
+import javax.inject.Inject
 
-class PostsFakeService : JsonPlaceholderService {
+class PostsFakeService @Inject constructor() : SomeService {
 
-    private val posts = FakeResource(
-        listOf(
-            Post(1, 1, "title", "some insightful dissertation...")
-        ),
-        1000
+    private val users = listOf(
+        User(1, "Czeslaw", "Niewomen"),
+        User(2, "Steve", "Careers")
     )
 
-    override fun getPosts() = posts.getObservable()
+    private val posts = listOf(
+        Post(1, 1, "title", "some insightful dissertation..."),
+        Post(2, 1, "Tru story", "And then, I saw the Yeti in its full glory"),
+        Post(3, 2, "m2 seen it", "Yea, confirmed")
+    )
+
+
+    override fun getUsers() = fakeResource { users }
+
+    override fun getPosts() = fakeResource { posts }
+
+    override fun getPostsByUserId(userId: Long) = fakeResource { posts.filter { it.userId == userId } }
+
 }

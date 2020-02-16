@@ -1,6 +1,6 @@
 package com.github.pksokolowski.rxjavafun.di
 
-import com.github.pksokolowski.rxjavafun.api.JsonPlaceholderService
+import com.github.pksokolowski.rxjavafun.api.SomeService
 import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import dagger.Module
 import dagger.Provides
@@ -21,7 +21,7 @@ open class NetworkModule {
 
     @PerApp
     @Provides
-    fun provideJsonPlaceholderService(retrofit: Retrofit): JsonPlaceholderService =
+    fun provideSomeService(retrofit: Retrofit): SomeService =
         PostsFakeService()
 
 }
