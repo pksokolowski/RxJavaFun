@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.github.pksokolowski.rxjavafun.di.ViewModelFactory
+import com.jakewharton.rxbinding4.view.clicks
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
@@ -41,7 +42,13 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener {
             viewModel.fetchPostsOfAllUsers()
         }
+
+        output.clicks()
+            .subscribe{
+                output.text = "I've been clicked"
+            }
     }
+
 
     @SuppressLint("SetTextI18n")
     private fun writeln(content: String) {
