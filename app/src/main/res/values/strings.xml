@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">RxJavaFun</string>
     <string name="start_button_content">Start</string>
+    <string name="clock_button_text">clock</string>
 </resources>

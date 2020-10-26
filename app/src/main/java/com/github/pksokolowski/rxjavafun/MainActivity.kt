@@ -3,13 +3,20 @@ package com.github.pksokolowski.rxjavafun
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.github.pksokolowski.rxjavafun.di.ViewModelFactory
 import com.jakewharton.rxbinding4.view.clicks
 import dagger.android.AndroidInjection
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
@@ -19,6 +26,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var viewModelFactory: ViewModelFactory
 
     private lateinit var viewModel: MainViewModel
+
+    private val disposables = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -43,21 +52,34 @@ class MainActivity : AppCompatActivity() {
             viewModel.fetchPostsOfAllUsers()
         }
 
+        // a slight abomination, done for practice though
+        clockButton.clicks().subscribe { getTimer(output) }
+
+
         output.clicks()
-            .subscribe{
+            .subscribe {
                 output.text = "I've been clicked"
             }
     }
 
+    private fun getTimer(output: TextView) = Observable.timer(1, TimeUnit.SECONDS)
+        .repeat()
+        .map { "$it  ${System.currentTimeMillis()}" }
+        .subscribeOn(Schedulers.single())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe { timeInfo ->
+            output.text = timeInfo
+        }
+        .addTo(disposables)
 
     @SuppressLint("SetTextI18n")
     private fun writeln(content: String) {
-        if(content.isEmpty()) return
+        if (content.isEmpty()) return
         output.append("\n$content")
         scroll()
     }
 
-    private fun writeln(lines: List<String>){
+    private fun writeln(lines: List<String>) {
         val builder = StringBuilder()
         lines.forEach { builder.appendln(it) }
         writeln(builder.toString())
@@ -82,5 +104,10 @@ class MainActivity : AppCompatActivity() {
             val secondPart = content.substring(index)
             output.append(secondPart)
         }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        disposables.clear()
     }
 }
