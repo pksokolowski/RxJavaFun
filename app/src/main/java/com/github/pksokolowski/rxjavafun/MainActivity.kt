@@ -51,6 +51,9 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener {
             viewModel.fetchPostsOfAllUsers()
         }
+        startButton.clicks()
+            .throttleFirst(4, TimeUnit.SECONDS)
+            .subscribe { viewModel.fetchPostsOfAllUsers() }
 
         // a slight abomination, done for practice though
         clockButton.clicks().subscribe { getTimer(output) }
