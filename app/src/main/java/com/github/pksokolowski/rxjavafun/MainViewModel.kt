@@ -1,15 +1,18 @@
 package com.github.pksokolowski.rxjavafun
 
+import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
@@ -37,6 +40,15 @@ class MainViewModel @Inject constructor(
             )
             .addTo(disposables)
 
+    fun getTimer(output: TextView) = Observable.timer(1, TimeUnit.SECONDS)
+        .repeat()
+        .map { "$it  ${System.currentTimeMillis()}" }
+        .subscribeOn(Schedulers.single())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe { timeInfo ->
+            output.text = timeInfo
+        }
+        .addTo(disposables)
 
     fun fetchPostsOfAllUsers() {
         val results = mutableListOf<Post>()

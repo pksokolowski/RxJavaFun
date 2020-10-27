@@ -27,8 +27,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
 
-    private val disposables = CompositeDisposable()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -56,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             .subscribe { viewModel.fetchPostsOfAllUsers() }
 
         // a slight abomination, done for practice though
-        clockButton.clicks().subscribe { getTimer(output) }
+        clockButton.clicks().subscribe { viewModel.getTimer(output) }
 
 
         output.clicks()
@@ -64,16 +62,6 @@ class MainActivity : AppCompatActivity() {
                 output.text = "I've been clicked"
             }
     }
-
-    private fun getTimer(output: TextView) = Observable.timer(1, TimeUnit.SECONDS)
-        .repeat()
-        .map { "$it  ${System.currentTimeMillis()}" }
-        .subscribeOn(Schedulers.single())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe { timeInfo ->
-            output.text = timeInfo
-        }
-        .addTo(disposables)
 
     @SuppressLint("SetTextI18n")
     private fun writeln(content: String) {
@@ -109,8 +97,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        disposables.clear()
-    }
 }
