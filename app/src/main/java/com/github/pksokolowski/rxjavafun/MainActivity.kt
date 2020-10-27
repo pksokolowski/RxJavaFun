@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.github.pksokolowski.rxjavafun.di.ViewModelFactory
 import com.jakewharton.rxbinding4.view.clicks
+import com.jakewharton.rxbinding4.widget.textChanges
 import dagger.android.AndroidInjection
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -56,10 +57,16 @@ class MainActivity : AppCompatActivity() {
         // a slight abomination, done for practice though
         clockButton.clicks().subscribe { viewModel.getTimer(output) }
 
-
         output.clicks()
             .subscribe {
                 output.text = "I've been clicked"
+            }
+
+        inputEditText.textChanges()
+            .debounce(1, TimeUnit.SECONDS)
+            .map { it.toString() }
+            .subscribe {
+                output.text = it
             }
     }
 
