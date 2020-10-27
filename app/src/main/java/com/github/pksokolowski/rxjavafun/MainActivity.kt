@@ -3,7 +3,6 @@ package com.github.pksokolowski.rxjavafun
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -11,11 +10,8 @@ import com.github.pksokolowski.rxjavafun.di.ViewModelFactory
 import com.jakewharton.rxbinding4.view.clicks
 import com.jakewharton.rxbinding4.widget.textChanges
 import dagger.android.AndroidInjection
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -67,6 +63,17 @@ class MainActivity : AppCompatActivity() {
             .map { it.toString() }
             .subscribe {
                 output.text = it
+            }
+
+        searchEditText.textChanges()
+            .debounce(300, TimeUnit.MILLISECONDS)
+            .map { it.toString() }
+            .flatMapSingle { viewModel.findVocabulary(it) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { vocabulary ->
+                output.text = vocabulary
+                    .joinToString(separator = "\n")
             }
     }
 

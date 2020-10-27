@@ -1,6 +1,6 @@
 package com.github.pksokolowski.rxjavafun.api.fakes
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 fun <T> fakeResource(delayMillis: Long = 0, response: () -> T): Observable<T> {
     fun get(): T {

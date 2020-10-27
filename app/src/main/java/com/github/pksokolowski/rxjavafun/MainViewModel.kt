@@ -5,18 +5,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
+import com.github.pksokolowski.rxjavafun.api.fakes.VocabFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.kotlin.subscribeBy
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
-    private val service: PostsFakeService
+    private val postsService: PostsFakeService,
+    private val vocabService: VocabFakeService
 ) : ViewModel() {
 
     private val disposables = CompositeDisposable()
@@ -28,7 +31,7 @@ class MainViewModel @Inject constructor(
     fun getPosts() = posts as LiveData<List<Post>>
 
     fun fetchPosts() =
-        service.getPosts()
+        postsService.getPosts()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
@@ -39,6 +42,11 @@ class MainViewModel @Inject constructor(
                 onComplete = {}
             )
             .addTo(disposables)
+
+    fun findVocabulary(prefix: String): Single<List<String>> = vocabService.getVocabulary()
+        .filter { it.startsWith(prefix) }
+        .distinct()
+        .toSortedList()
 
     fun getTimer(output: TextView) = Observable.timer(1, TimeUnit.SECONDS)
         .repeat()
@@ -52,12 +60,12 @@ class MainViewModel @Inject constructor(
 
     fun fetchPostsOfAllUsers() {
         val results = mutableListOf<Post>()
-        service.getUsers()
+        postsService.getUsers()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .flatMapIterable { it }
             .flatMap { user ->
-                service.getPostsByUserId(user.id)
+                postsService.getPostsByUserId(user.id)
             }
             .subscribeBy(
                 onNext = { results.addAll(it) },

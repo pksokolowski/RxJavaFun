@@ -3,4 +3,5 @@
     <string name="start_button_content">Start</string>
     <string name="clock_button_text">clock</string>
     <string name="edit_text_hint">Write sth here</string>
+    <string name="search_hint">Type to search for vocabulary...</string>
 </resources>
