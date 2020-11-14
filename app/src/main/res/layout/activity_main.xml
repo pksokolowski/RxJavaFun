@@ -54,6 +54,7 @@
         android:hint="@string/edit_text_hint"
         android:inputType="text"
         android:textColor="#D3D3D3"
+        android:textColorHint="@color/hintColor"
         app:layout_constraintBottom_toBottomOf="@+id/clockButton"
         app:layout_constraintEnd_toStartOf="@+id/clockButton"
         app:layout_constraintHorizontal_bias="1.0"
@@ -72,6 +73,7 @@
         android:hint="@string/search_hint"
         android:inputType="textPersonName"
         android:textColor="#D3D3D3"
+        android:textColorHint="@color/hintColor"
         app:layout_constraintBottom_toTopOf="@+id/inputEditText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
