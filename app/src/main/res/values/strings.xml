@@ -2,6 +2,10 @@
     <string name="app_name">RxJavaFun</string>
     <string name="start_button_content">Start</string>
     <string name="clock_button_text">clock</string>
-    <string name="edit_text_hint">Write sth here</string>
+    <string name="command_input_hint">type command here</string>
     <string name="search_hint">Type to search for vocabulary...</string>
+    <string name="unknown_command">Unknown command, try one of those:\n%s</string>
+    <string name="error_maybe">nothing this time!</string>
+    <string name="maybe_first_prize">Lucky!</string>
+    <string name="maybe_second_prize">Second prize!!</string>
 </resources>

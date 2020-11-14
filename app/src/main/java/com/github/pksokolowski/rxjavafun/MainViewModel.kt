@@ -1,6 +1,7 @@
 package com.github.pksokolowski.rxjavafun
 
 import android.widget.TextView
+import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,14 +9,17 @@ import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import com.github.pksokolowski.rxjavafun.api.fakes.VocabFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.lang.Math.random
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.random.Random
 
 class MainViewModel @Inject constructor(
     private val postsService: PostsFakeService,
@@ -72,6 +76,26 @@ class MainViewModel @Inject constructor(
                 onComplete = { posts.value = results }
             )
             .addTo(disposables)
+    }
+
+    fun maybeFun(): Single<Int> {
+        val cachedResponse = Maybe.create<Int> { e ->
+            if (Random.nextInt(1, 11) > 7) {
+                e.onSuccess(R.string.maybe_first_prize)
+            }
+            e.onComplete()
+        }
+
+        val freshDownload = Maybe.create<Int> { e ->
+            if (Random.nextInt(1, 11) > 4) {
+                e.onSuccess(R.string.maybe_second_prize)
+            }
+            e.onComplete()
+        }
+
+        // turn two maybes into a single... single.
+        return Maybe.concat(cachedResponse, freshDownload)
+            .firstOrError()
     }
 
     override fun onCleared() {

@@ -3,6 +3,7 @@ package com.github.pksokolowski.rxjavafun
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -61,9 +62,7 @@ class MainActivity : AppCompatActivity() {
         inputEditText.textChanges()
             .debounce(1, TimeUnit.SECONDS)
             .map { it.toString() }
-            .subscribe {
-                output.text = it
-            }
+            .subscribe(::handleCommand)
 
         searchEditText.textChanges()
             .debounce(300, TimeUnit.MILLISECONDS)
@@ -75,6 +74,38 @@ class MainActivity : AppCompatActivity() {
                 output.text = vocabulary
                     .joinToString(separator = "\n")
             }
+    }
+
+    fun displayString(@StringRes content: Int) = displayString(getString(content))
+
+    fun displayString(content: String) {
+        output.text = content
+    }
+
+    private val commands = hashMapOf(
+        "maybe" to {
+            viewModel.maybeFun()
+                .onErrorComplete { displayString(getString(R.string.error_maybe)); true }
+                .subscribe(::displayString)
+        }
+    )
+
+    /**
+     * Simplifies UI a bit by taking care of commands.
+     */
+    private fun handleCommand(input: String) {
+        val command = commands[input]
+        if (command == null) {
+            displayString(
+                getString(
+                    R.string.unknown_command,
+                    commands.keys.toList().joinToString("\n")
+                )
+            )
+            return
+        }
+
+        command()
     }
 
     @SuppressLint("SetTextI18n")
