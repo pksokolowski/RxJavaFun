@@ -1,7 +1,5 @@
 package com.github.pksokolowski.rxjavafun
 
-import android.widget.TextView
-import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -16,15 +14,23 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
-import java.lang.Math.random
+import io.reactivex.rxjava3.subjects.PublishSubject
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.random.Random
+
 
 class MainViewModel @Inject constructor(
     private val postsService: PostsFakeService,
     private val vocabService: VocabFakeService
 ) : ViewModel() {
+
+    private val _output = PublishSubject.create<String>()
+    val output: Observable<String> = _output
+
+    private fun output(message: String) {
+        _output.onNext(message)
+    }
 
     private val disposables = CompositeDisposable()
 
@@ -52,13 +58,13 @@ class MainViewModel @Inject constructor(
         .distinct()
         .toSortedList()
 
-    fun getTimer(output: TextView) = Observable.timer(1, TimeUnit.SECONDS)
+    fun getTimer() = Observable.timer(1, TimeUnit.SECONDS)
         .repeat()
         .map { "$it  ${System.currentTimeMillis()}" }
         .subscribeOn(Schedulers.single())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe { timeInfo ->
-            output.text = timeInfo
+            output(timeInfo)
         }
         .addTo(disposables)
 

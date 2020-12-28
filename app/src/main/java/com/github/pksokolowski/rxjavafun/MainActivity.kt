@@ -12,6 +12,8 @@ import com.jakewharton.rxbinding4.view.clicks
 import com.jakewharton.rxbinding4.widget.textChanges
 import dagger.android.AndroidInjection
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
@@ -25,6 +27,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
 
+    private val disposables = CompositeDisposable()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
@@ -35,6 +39,19 @@ class MainActivity : AppCompatActivity() {
 
         setupUiInteraction()
         setupObservers()
+        setupOutputObserver()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposables.clear()
+    }
+
+    private fun setupOutputObserver() {
+        viewModel.output
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { displayString(it) }
+            .addTo(disposables)
     }
 
     private fun setupObservers() {
@@ -50,19 +67,24 @@ class MainActivity : AppCompatActivity() {
         startButton.clicks()
             .throttleFirst(4, TimeUnit.SECONDS)
             .subscribe { viewModel.fetchPostsOfAllUsers() }
+            .addTo(disposables)
 
         // a slight abomination, done for practice though
-        clockButton.clicks().subscribe { viewModel.getTimer(output) }
+        clockButton.clicks()
+            .subscribe { viewModel.getTimer() }
+            .addTo(disposables)
 
         output.clicks()
             .subscribe {
                 output.text = "I've been clicked"
             }
+            .addTo(disposables)
 
         inputEditText.textChanges()
             .debounce(1, TimeUnit.SECONDS)
             .map { it.toString() }
             .subscribe(::handleCommand)
+            .addTo(disposables)
 
         searchEditText.textChanges()
             .debounce(300, TimeUnit.MILLISECONDS)
@@ -74,6 +96,7 @@ class MainActivity : AppCompatActivity() {
                 output.text = vocabulary
                     .joinToString(separator = "\n")
             }
+            .addTo(disposables)
     }
 
     fun displayString(@StringRes content: Int) = displayString(getString(content))
@@ -87,6 +110,7 @@ class MainActivity : AppCompatActivity() {
             viewModel.maybeFun()
                 .onErrorComplete { displayString(getString(R.string.error_maybe)); true }
                 .subscribe(::displayString)
+                .addTo(disposables)
         }
     )
 
