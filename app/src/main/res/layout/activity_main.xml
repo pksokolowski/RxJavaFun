@@ -16,18 +16,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/clockButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:rotationX="41"
-        android:text="@string/clock_button_text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/startButton"
-        app:layout_constraintTop_toTopOf="@+id/startButton" />
-
     <TextView
         android:id="@+id/output"
         android:layout_width="0dp"
@@ -49,18 +37,15 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:ems="10"
         android:hint="@string/command_input_hint"
         android:inputType="text"
         android:textColor="#D3D3D3"
         android:textColorHint="@color/hintColor"
-        app:layout_constraintBottom_toBottomOf="@+id/clockButton"
-        app:layout_constraintEnd_toStartOf="@+id/clockButton"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintBottom_toBottomOf="@+id/startButton"
+        app:layout_constraintEnd_toStartOf="@+id/startButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/clockButton"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="@+id/startButton" />
 
     <EditText
         android:id="@+id/searchEditText"

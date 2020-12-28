@@ -39,7 +39,9 @@ class MainActivity : AppCompatActivity() {
 
         setupUiInteraction()
         setupObservers()
-        setupOutputObserver()
+        setupOutputObservers()
+
+        inputEditText.requestFocus()
     }
 
     override fun onDestroy() {
@@ -47,10 +49,15 @@ class MainActivity : AppCompatActivity() {
         disposables.clear()
     }
 
-    private fun setupOutputObserver() {
+    private fun setupOutputObservers() {
         viewModel.output
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { displayString(it) }
+            .addTo(disposables)
+
+        viewModel.outputUpdateLastLine
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { replaceLastLineWith(it) }
             .addTo(disposables)
     }
 
@@ -69,24 +76,14 @@ class MainActivity : AppCompatActivity() {
             .subscribe { viewModel.fetchPostsOfAllUsers() }
             .addTo(disposables)
 
-        // a slight abomination, done for practice though
-        clockButton.clicks()
-            .subscribe { viewModel.getTimer() }
-            .addTo(disposables)
-
-        output.clicks()
-            .subscribe {
-                output.text = "I've been clicked"
-            }
-            .addTo(disposables)
-
         inputEditText.textChanges()
-            .debounce(1, TimeUnit.SECONDS)
+            .debounce(300, TimeUnit.MILLISECONDS)
             .map { it.toString() }
             .subscribe(::handleCommand)
             .addTo(disposables)
 
         searchEditText.textChanges()
+            .skipInitialValue()
             .debounce(300, TimeUnit.MILLISECONDS)
             .map { it.toString() }
             .flatMapSingle { viewModel.findVocabulary(it) }
@@ -99,10 +96,19 @@ class MainActivity : AppCompatActivity() {
             .addTo(disposables)
     }
 
-    fun displayString(@StringRes content: Int) = displayString(getString(content))
+    private fun displayString(@StringRes content: Int) = displayString(getString(content))
 
-    fun displayString(content: String) {
+    private fun displayString(content: String) {
         output.text = content
+    }
+
+    private fun replaceLastLineWith(content: String) {
+        val current = output.text.toString()
+        val lastLineIndex = current.indexOfLast { it == '\n' }.let { index ->
+            if (index == -1) 0 else index + 1
+        }
+
+        output.text = current.substring(0, lastLineIndex) + content
     }
 
     private val commands = hashMapOf(
@@ -111,7 +117,16 @@ class MainActivity : AppCompatActivity() {
                 .onErrorComplete { displayString(getString(R.string.error_maybe)); true }
                 .subscribe(::displayString)
                 .addTo(disposables)
-        }
+        },
+        "backpressure-unhandled" to {
+            viewModel.backPressureUnhandled()
+        },
+        "backpressure-sample" to {
+            viewModel.backPressureSample()
+        },
+        "timer" to {
+            viewModel.getTimer()
+        },
     )
 
     /**

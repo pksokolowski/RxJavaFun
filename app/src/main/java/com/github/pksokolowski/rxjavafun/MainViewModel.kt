@@ -7,6 +7,7 @@ import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import com.github.pksokolowski.rxjavafun.api.fakes.VocabFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -28,8 +29,15 @@ class MainViewModel @Inject constructor(
     private val _output = PublishSubject.create<String>()
     val output: Observable<String> = _output
 
-    private fun output(message: String) {
-        _output.onNext(message)
+    private val _outputUpdateLastLine = PublishSubject.create<String>()
+    val outputUpdateLastLine: Observable<String> = _outputUpdateLastLine
+
+    private fun output(message: String, updateLastLine: Boolean = false) {
+        if (updateLastLine) {
+            _outputUpdateLastLine.onNext(message)
+        } else {
+            _output.onNext(message)
+        }
     }
 
     private val disposables = CompositeDisposable()
@@ -102,6 +110,34 @@ class MainViewModel @Inject constructor(
         // turn two maybes into a single... single.
         return Maybe.concat(cachedResponse, freshDownload)
             .firstOrError()
+    }
+
+    private fun processInteger(input: Int) {
+        Thread.sleep(100)
+        output("processed input = $input", true)
+    }
+
+    fun backPressureUnhandled() {
+        val source = PublishSubject.create<Int>()
+
+        source.observeOn(Schedulers.computation())
+            .subscribe(::processInteger) { output("Exception: $it") }
+            .addTo(disposables)
+
+        (1..30).forEach(source::onNext)
+    }
+
+    fun backPressureSample() {
+        val source = PublishSubject.create<Int>()
+
+        source
+            .toFlowable(BackpressureStrategy.DROP)
+            .sample(100, TimeUnit.MILLISECONDS)
+            .observeOn(Schedulers.computation())
+            .subscribe(::processInteger) { throwable -> output(throwable.toString()) }
+            .addTo(disposables)
+
+        (1..1_300_000).forEach(source::onNext)
     }
 
     override fun onCleared() {
