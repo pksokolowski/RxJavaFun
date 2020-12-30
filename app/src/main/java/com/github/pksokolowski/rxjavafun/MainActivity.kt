@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity() {
      * Simplifies UI a bit by taking care of commands.
      */
     private fun handleCommand(input: String) {
+        viewModel.clearOngoingSampleStreams()
         val command = commands[input]
         if (command == null) {
             displayString(

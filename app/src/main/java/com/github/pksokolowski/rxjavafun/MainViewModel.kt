@@ -41,6 +41,7 @@ class MainViewModel @Inject constructor(
     }
 
     private val disposables = CompositeDisposable()
+    private val samplesDisposables = CompositeDisposable()
 
     private val posts = MutableLiveData<List<Post>>().apply {
         value = listOf()
@@ -122,9 +123,9 @@ class MainViewModel @Inject constructor(
 
         source.observeOn(Schedulers.computation())
             .subscribe(::processInteger) { output("Exception: $it") }
-            .addTo(disposables)
+            .addTo(samplesDisposables)
 
-        (1..30).forEach(source::onNext)
+        (1..1_300_000).forEach(source::onNext)
     }
 
     fun backPressureSample() {
@@ -135,9 +136,16 @@ class MainViewModel @Inject constructor(
             .sample(100, TimeUnit.MILLISECONDS)
             .observeOn(Schedulers.computation())
             .subscribe(::processInteger) { throwable -> output(throwable.toString()) }
-            .addTo(disposables)
+            .addTo(samplesDisposables)
 
         (1..1_300_000).forEach(source::onNext)
+    }
+
+    /**
+     * Kills streams of code samples, useful when switching between long-running samples
+     */
+    fun clearOngoingSampleStreams() {
+        samplesDisposables.clear()
     }
 
     override fun onCleared() {
