@@ -134,6 +134,8 @@ class MainActivity : AppCompatActivity() {
      */
     private fun handleCommand(input: String) {
         viewModel.clearOngoingSampleStreams()
+        displayString("")
+
         val command = commands[input]
         if (command == null) {
             displayString(
