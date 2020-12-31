@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupOutputObservers() {
         viewModel.output
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { displayString(it) }
+            .subscribe { writeln(it) }
             .addTo(disposables)
 
         viewModel.outputUpdateLastLine
@@ -127,6 +127,9 @@ class MainActivity : AppCompatActivity() {
         "timer" to {
             viewModel.getTimer()
         },
+        "combine-latest" to {
+            viewModel.combineLatest()
+        }
     )
 
     /**

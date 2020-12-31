@@ -73,9 +73,9 @@ class MainViewModel @Inject constructor(
         .subscribeOn(Schedulers.single())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe { timeInfo ->
-            output(timeInfo)
+            output(timeInfo, true)
         }
-        .addTo(disposables)
+        .addTo(samplesDisposables)
 
     fun fetchPostsOfAllUsers() {
         val results = mutableListOf<Post>()
@@ -140,6 +140,25 @@ class MainViewModel @Inject constructor(
 
         (1..1_300_000).forEach(source::onNext)
     }
+
+    fun combineLatest() {
+        val observableA = emitFollowing(listOf(true, true, false, true), 300)
+        val observableB = emitFollowing(listOf(false, true, false, false, true), 200)
+
+        Observable.combineLatest(observableA, observableB) { itemA, itemB ->
+            itemA && itemB
+        }
+            .observeOn(Schedulers.computation())
+            .subscribe { bothTrue ->
+                output(if (bothTrue) "Both are true!" else "at least one is false")
+            }
+            .addTo(samplesDisposables)
+
+    }
+
+    private fun <T> emitFollowing(items: List<T>, delay: Long): Observable<T> =
+        Observable.fromIterable(items)
+            .map { Thread.sleep(delay); it }
 
     /**
      * Kills streams of code samples, useful when switching between long-running samples
