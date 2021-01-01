@@ -124,12 +124,18 @@ class MainActivity : AppCompatActivity() {
         "backpressure-sample" to {
             viewModel.backPressureSample()
         },
+        "backpressure-1/time" to {
+            viewModel.backpressureOneAtATime()
+        },
+        "backpressure-all/time" to {
+            viewModel.backpressureOneAtATime(requestAllAtStartInstead = true)
+        },
         "timer" to {
             viewModel.getTimer()
         },
         "combine-latest" to {
             viewModel.combineLatest()
-        }
+        },
     )
 
     /**

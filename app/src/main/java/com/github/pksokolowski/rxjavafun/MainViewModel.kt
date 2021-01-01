@@ -7,15 +7,15 @@ import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import com.github.pksokolowski.rxjavafun.api.fakes.VocabFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.BackpressureStrategy
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.random.Random
@@ -141,6 +141,43 @@ class MainViewModel @Inject constructor(
         (1..1_300_000).forEach(source::onNext)
     }
 
+    fun backpressureOneAtATime(requestAllAtStartInstead: Boolean = false) {
+        output("now subscriber only requests what it can handle - 1 at a time\n")
+
+        val executor: ExecutorService = Executors.newSingleThreadExecutor()
+
+        Flowable.range(1, 10)
+            .doOnNext { v: Int -> output("produced: $v") }
+            .subscribeOn(Schedulers.io())
+            .subscribe(object : DisposableSubscriber<Int>() {
+                override fun onStart() {
+                    if (requestAllAtStartInstead) {
+                        super.onStart()
+                    } else {
+                        request(1)
+                    }
+                    samplesDisposables.add(this)
+                }
+
+                override fun onNext(item: Int?) {
+                    executor.execute {
+                        Thread.sleep(100)
+                        output("- received item = $item")
+                        request(1)
+                    }
+                }
+
+                override fun onError(t: Throwable?) {
+                    executor.execute {
+                        output("error happened within subscriber: $t")
+                    }
+                }
+
+                override fun onComplete() {
+                }
+            })
+    }
+
     fun combineLatest() {
         val observableA = emitFollowing(listOf(true, true, false, true), 300)
         val observableB = emitFollowing(listOf(false, true, false, false, true), 200)
@@ -158,6 +195,10 @@ class MainViewModel @Inject constructor(
 
     private fun <T> emitFollowing(items: List<T>, delay: Long): Observable<T> =
         Observable.fromIterable(items)
+            .map { Thread.sleep(delay); it }
+
+    private fun <T> emitFollowingFlowable(items: List<T>, delay: Long): Flowable<T> =
+        Flowable.fromIterable(items)
             .map { Thread.sleep(delay); it }
 
     /**
