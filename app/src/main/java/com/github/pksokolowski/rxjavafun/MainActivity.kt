@@ -136,6 +136,18 @@ class MainActivity : AppCompatActivity() {
         "combine-latest" to {
             viewModel.combineLatest()
         },
+        "divby0" to {
+            viewModel.handleErrors()
+        },
+        "default" to {
+            viewModel.handleErrorMidChainWithDefaultReplacement()
+        },
+        "fallback" to {
+            viewModel.handleErrorAndSwithToADifferentSolution(1)
+        },
+        "retry" to {
+            viewModel.handlerErrorAndRetry()
+        }
     )
 
     /**

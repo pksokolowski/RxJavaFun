@@ -9,6 +9,7 @@ import com.github.pksokolowski.rxjavafun.api.models.Post
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.internal.operators.observable.ObservableJust
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -191,6 +192,84 @@ class MainViewModel @Inject constructor(
             }
             .addTo(samplesDisposables)
 
+    }
+
+    fun handleErrors() {
+        output("computing 3 / 0...")
+        Observable.just(3)
+            .subscribeOn(Schedulers.computation())
+            .map { it / 0 }
+            .doOnError { output("division didn't work") }
+            .subscribe { result ->
+                output("division result is $result")
+            }
+            .addTo(samplesDisposables)
+    }
+
+    fun handleErrorMidChainWithDefaultReplacement() {
+        output("Running a chain od two operations; the first one fails and a default value is used instead for the second one\n")
+        Observable.just(0)
+            .subscribeOn(Schedulers.computation())
+            .map { 3 / it }
+            .doOnError { output("error in stage one! Falling back to defaults") }
+            .onErrorReturnItem(1)
+            .map { it + 1 }
+            .subscribeBy { resultOfStage2 ->
+                output("Result of the second stage is: $resultOfStage2")
+            }
+            .addTo(samplesDisposables)
+    }
+
+    fun handleErrorAndSwithToADifferentSolution(input: Int) {
+        output("Tries a faster, probabilistic algorithm first, when it succeeds - great, but it not, falls back to a slower, deterministic solution\n")
+
+        fun fastProbabilisticAlgorithm(number: Int): Int {
+            Thread.sleep(100)
+            if (Random.nextBoolean()) throw ArithmeticException("Failed to perform the operation")
+            return number * 2
+        }
+
+        fun slowDeterministicAlgorithm(number: Int): Int {
+            Thread.sleep(1000)
+            return number * 2
+        }
+
+        Observable.just(input)
+            .subscribeOn(Schedulers.computation())
+            .map {
+                output("trying with the fast, probabilistic algorithm")
+                fastProbabilisticAlgorithm(it)
+            }
+            .onErrorResumeNext {
+                output("falling back to a deterministic one")
+                Observable.just(input)
+                    .map { slowDeterministicAlgorithm(it) }
+            }
+            .subscribe {
+                output("result is: $it")
+            }
+            .addTo(samplesDisposables)
+    }
+
+    fun handlerErrorAndRetry() {
+        output("Tries an iffy connection, if it faile, retries a couple of times\n")
+
+        fun downloadResourceOverIffyConnection(): String {
+            Thread.sleep(100)
+            if (Random.nextBoolean()) throw ArithmeticException("Failed to perform the operation")
+            return "<some successfully retrieved content>"
+        }
+
+        Observable.just(1)
+            .map { downloadResourceOverIffyConnection() }
+            .subscribeOn(Schedulers.io())
+            .retry(4)
+            .doOnError {
+                output("Tried 5 times but failed anyway")
+            }
+            .subscribe {
+                output("Got: $it")
+            }
     }
 
     private fun <T> emitFollowing(items: List<T>, delay: Long): Observable<T> =
