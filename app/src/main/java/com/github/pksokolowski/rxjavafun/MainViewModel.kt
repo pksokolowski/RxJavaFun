@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModel
 import com.github.pksokolowski.rxjavafun.api.fakes.PostsFakeService
 import com.github.pksokolowski.rxjavafun.api.fakes.VocabFakeService
 import com.github.pksokolowski.rxjavafun.api.models.Post
+import com.github.pksokolowski.rxjavafun.operators.filterDoubleTap
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.internal.operators.observable.ObservableJust
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -270,6 +270,21 @@ class MainViewModel @Inject constructor(
             .subscribe {
                 output("Got: $it")
             }
+    }
+
+    fun customOperator() {
+        Observable.range(1, 10)
+            .map {
+                val inverse = 10 - it
+                Thread.sleep(inverse * 100L)
+                output("click!")
+                inverse
+            }
+            .compose(filterDoubleTap(300))
+            .subscribe {
+                output("Actuated!")
+            }
+            .addTo(samplesDisposables)
     }
 
     private fun <T> emitFollowing(items: List<T>, delay: Long): Observable<T> =

@@ -147,7 +147,10 @@ class MainActivity : AppCompatActivity() {
         },
         "retry" to {
             viewModel.handlerErrorAndRetry()
-        }
+        },
+        "custom" to {
+            viewModel.customOperator()
+        },
     )
 
     /**
